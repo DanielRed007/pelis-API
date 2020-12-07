@@ -1,0 +1,3 @@
+
+repo url: https://bitbucket.org/th7thoth/pelis.api/src/master/
+trello group: https://trello.com/c/8vef5TK6/1-crear-nuevo-proyecto-en-bitbucket
