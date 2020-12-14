@@ -1,33 +1,10 @@
+import { Request, Response } from "express";
 import Movie from "../../schema/model/Movie.model";
-
-const textSearchQuery = (text) => {
-  const query = { $text: { $search: text } };
-  const meta_score = { $meta: "textScore" };
-  const sort = [["score", meta_score]];
-  const project = { score: meta_score };
-
-  return { query, project, sort };
-};
-
-const castSearchQuery = (cast) => {
-  const searchCast = Array.isArray(cast) ? cast : cast.split(", ");
-
-  const query = { cast: { $in: searchCast } };
-  const project = { title: 1, year: 1, director: 1 };
-  const sort = { title: -1 };
-
-  return { query, project, sort };
-};
-
-const genreSearchQuery = (genre) => {
-  const searchGenre = Array.isArray(genre) ? genre : genre.split(", ");
-
-  const query = { genres: { $in: searchGenre } };
-  const project = { title: 1, genres: 1 };
-  const sort = { title: 1 };
-
-  return { query, project, sort };
-};
+import {
+  textSearchQuery,
+  castSearchQuery,
+  genreSearchQuery,
+} from "./query/movie-data-query";
 
 const getMovies = async ({
   filters = null,
@@ -50,7 +27,10 @@ const getMovies = async ({
   let cursor;
 
   try {
-    cursor = await Movie.find(query, project).sort(sort).limit(moviesPerPage);
+    cursor = await Movie.find(query, project)
+      .skip(page > 0 ? (page - 1) * moviesPerPage : 0)
+      .sort(sort)
+      .limit(moviesPerPage);
   } catch (error) {
     console.error(`Unable to issue find command, ${error}`);
     return { moviesList: [], totalNumMovies: 0 };
@@ -60,7 +40,7 @@ const getMovies = async ({
 
   try {
     const moviesList = await cursor;
-    const totalNumMovies = await Movie.find(query).count();
+    const totalNumMovies = await Movie.find(query).countDocuments();
 
     return { moviesList, totalNumMovies };
   } catch (e) {
@@ -71,13 +51,13 @@ const getMovies = async ({
   }
 };
 
-export const searchMovies = async (req: any, res: any, next) => {
+export const searchMovies = async (req: Request, res: Response, next) => {
   const moviesPerPage = 10;
   let page;
 
   // Set Page number
   try {
-    page = req.query.page ? parseInt(req.query.page, 10) : 0;
+    page = req.query.page ? parseInt(req.query.page) : 0;
   } catch (error) {
     console.error(`Got bad value for page:, ${error}`);
     page = 0;
