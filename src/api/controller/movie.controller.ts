@@ -110,3 +110,20 @@ export const searchMovies = async (req: Request, res: Response, next) => {
 
   res.json(response);
 };
+
+export const moviesByGenresAndYear = async (req: Request, res: Response) => {
+  try {
+    const { year, genres } = req.params;
+    const queryGenres = genres.split(",");
+    const movies = await Movie.aggregate([
+      { $match: { year: parseInt(year), genres: { $all: queryGenres } } },
+      {
+        $project: { year: 1, genres: 1, title: 1, countries: 1, directors: 1 },
+      },
+    ]);
+
+    res.json(movies);
+  } catch (e) {
+    console.error(`Aggregation failed - Error Type: ${e}`);
+  }
+};
