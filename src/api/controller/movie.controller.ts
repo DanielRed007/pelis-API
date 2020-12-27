@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Movie from "../../schema/model/Movie.model";
+import { movieRouter } from "../route/movie.route";
+import { projectByGenreYear } from "./project/movie-data-project";
 import {
   textSearchQuery,
   castSearchQuery,
@@ -111,16 +113,33 @@ export const searchMovies = async (req: Request, res: Response, next) => {
   res.json(response);
 };
 
-export const moviesByGenresAndYear = async (req: Request, res: Response) => {
+export const searchMoviesAggregate = async (req: Request, res: Response) => {
   try {
-    const { year, genres } = req.params;
-    const queryGenres = genres.split(",");
     const movies = await Movie.aggregate([
-      { $match: { year: parseInt(year), genres: { $all: queryGenres } } },
       {
-        $project: { year: 1, genres: 1, title: 1, countries: 1, directors: 1 },
+        $match: { $and: [{ year: { $lte: 1990 } }, { year: { $gte: 1980 } }] },
+      },
+      {
+        $project: { title: 1, genres: 1, year: 1 },
+      },
+      {
+        $sort: { year: -1, title: 1 },
       },
     ]);
+
+    const response = {
+      movies: movies,
+    };
+
+    res.json(movies);
+  } catch (e) {
+    console.error(`Aggregation failed - Error Type: ${e}`);
+  }
+};
+
+export const moviesByGenresAndYear = async (req: Request, res: Response) => {
+  try {
+    const movies = await Movie.aggregate(projectByGenreYear(req));
 
     res.json(movies);
   } catch (e) {
