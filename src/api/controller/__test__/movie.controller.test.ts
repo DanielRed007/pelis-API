@@ -15,7 +15,7 @@ describe("Get movies with filters", () => {
     await mongoose.connect(url, { useNewUrlParser: true });
   });
 
-  test("Get movies by cast", async () => {
+  test("Get movies by cast - First Page in list", async () => {
     // Choose an actress existing in the collection
     const filters = { cast: ["Nicole Kidman"] };
 
@@ -34,8 +34,25 @@ describe("Get movies with filters", () => {
     expect(firstMovie.title).toEqual("Trespass");
     // Check the year of the selected movie
     expect(firstMovie.year).toEqual(2011);
+  });
 
-    // Todo: Testing seventh page
+  test("Get movies by genre - Fourth Page in list", async () => {
+    const filters = { genre: ["Comedy"] };
+
+    // Testing fourth page
+    const { moviesList: fourthPage, totalNumMovies } = await getMovies({
+      filters,
+      page: 4,
+    });
+
+    // Check total count of search by genre
+    expect(totalNumMovies).toEqual(7022);
+    // Check total list length
+    expect(fourthPage.length).toEqual(10);
+
+    const lastMovie = fourthPage[9];
+    // Check title of last movie
+    expect(lastMovie.title).toEqual("2 Days in New York");
   });
 
   afterAll(async () => {
