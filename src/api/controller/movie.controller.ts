@@ -11,7 +11,7 @@ import {
   genreSearchQuery,
 } from "./query/movie-data-query";
 
-const getMovies = async ({
+export const getMovies = async ({
   filters = null,
   page = 0,
   moviesPerPage = 10,
