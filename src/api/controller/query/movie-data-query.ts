@@ -1,7 +1,7 @@
 export const textSearchQuery = (text) => {
   const query = { $text: { $search: text } };
   const sort = { title: 1, year: 1, director: 1 };
-  const project = { };
+  const project = { title: 1, year: 1, director: 1 };
   
   return { query, project, sort };
 };

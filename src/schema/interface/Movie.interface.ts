@@ -20,3 +20,11 @@ export interface IMovie extends Document {
   type: string;
   tomatoes: object;
 }
+
+export interface SearchListResponse {
+  movies: IMovie[];
+  page: number;
+  filters: {};
+  moviesPerPage: number;
+  total_count: number;
+}
