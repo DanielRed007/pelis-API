@@ -55,6 +55,23 @@ describe("Get movies with filters", () => {
     expect(lastMovie.title).toEqual("2 Days in New York");
   });
 
+  test("Get movies by text search - First page in the list", async() => {
+    const filters = { "text": "Kubrick" };
+
+    const { moviesList: firstPage, totalNumMovies } = await getMovies({
+      filters,
+      page: 1,
+    });
+
+    expect(totalNumMovies).toEqual(3);
+    // Check total list length
+    expect(firstPage.length).toEqual(3);
+
+    const lastMovie = firstPage[2];
+    // Check title of last movie
+    expect(lastMovie.title).toEqual("Stanley Kubrick: A Life in Pictures");
+  });
+
   afterAll(async () => {
     await mongoose.connection.close();
   });

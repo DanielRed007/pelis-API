@@ -41,8 +41,6 @@ export const getMovies = async ({
     return { moviesList: [], totalNumMovies: 0 };
   }
 
-  // const displayCursor = cursor.limit(moviesPerPage);
-
   try {
     const moviesList = await cursor;
     const totalNumMovies = await Movie.find(query).countDocuments();
@@ -56,6 +54,7 @@ export const getMovies = async ({
   }
 };
 
+// Get - Movies by Cast, Genre or Text Search
 export const searchMovies = async (req: Request, res: Response, next) => {
   const moviesPerPage = 10;
   let page: number;
@@ -116,6 +115,7 @@ export const searchMovies = async (req: Request, res: Response, next) => {
   res.json(response);
 };
 
+// GET - Movies by a range between two years
 export const searchMoviesYearRange = async (req: Request, res: Response) => {
   try {
     const movies = await Movie.aggregate(aggregationByYearRange(req));
@@ -126,6 +126,7 @@ export const searchMoviesYearRange = async (req: Request, res: Response) => {
   }
 };
 
+// GET - Movies by Genre and Year
 export const moviesByGenresAndYear = async (req: Request, res: Response) => {
   try {
     const movies = await Movie.aggregate(aggregationByGenreYear(req));

@@ -27,4 +27,7 @@ const MovieSchema: mongoose.Schema = new Schema(
   { collection: "movies" }
 );
 
+MovieSchema.index({year: 1, director: -1});
+MovieSchema.index({plot: "text"});
+
 export default mongoose.model<IMovie>("Movie", MovieSchema);

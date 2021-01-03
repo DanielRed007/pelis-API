@@ -1,9 +1,8 @@
 export const textSearchQuery = (text) => {
   const query = { $text: { $search: text } };
-  const meta_score = { $meta: "textScore" };
-  const sort = [["score", meta_score]];
-  const project = { score: meta_score };
-
+  const sort = { title: 1, year: 1, director: 1 };
+  const project = { };
+  
   return { query, project, sort };
 };
 
