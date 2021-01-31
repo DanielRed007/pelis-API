@@ -3,7 +3,7 @@ import { dbConfig } from "./dbConfig";
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(dbConfig.local, {
+    await mongoose.connect(dbConfig.mongoURI, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useFindAndModify: false,

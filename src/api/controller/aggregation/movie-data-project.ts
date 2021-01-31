@@ -30,3 +30,21 @@ export const aggregationByYearRange = (req: Request) => {
     },
   ];
 };
+
+export const aggregationByAverageDuration = (req: Request) => {
+  const { year } = req.params;
+
+  return [
+    {
+      $match: {
+        year: parseInt(year),
+      },
+    },
+    {
+      $group: {
+        _id: "total",
+        average: { $avg: "$runtime" },
+      },
+    },
+  ];
+};

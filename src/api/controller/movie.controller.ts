@@ -8,6 +8,7 @@ import { movieRouter } from "../route/movie.route";
 import {
   aggregationByGenreYear,
   aggregationByYearRange,
+  aggregationByAverageDuration,
 } from "./aggregation/movie-data-project";
 import {
   textSearchQuery,
@@ -153,6 +154,19 @@ export const searchMoviesYearRange = async (req: Request, res: Response) => {
 export const moviesByGenresAndYear = async (req: Request, res: Response) => {
   try {
     const movies: IMovie[] = await Movie.aggregate(aggregationByGenreYear(req));
+
+    res.json(movies);
+  } catch (e) {
+    console.error(`Aggregation failed - Error Type: ${e}`);
+  }
+};
+
+// GET - Movies by Genre and Year
+export const getMoviesByAverage = async (req: Request, res: Response) => {
+  try {
+    const movies: IMovie[] = await Movie.aggregate(
+      aggregationByAverageDuration(req)
+    );
 
     res.json(movies);
   } catch (e) {
