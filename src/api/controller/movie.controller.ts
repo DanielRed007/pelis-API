@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
+import {
+  IMovie,
+  SearchListResponse,
+} from "../../schema/interface/Movie.interface";
 import Movie from "../../schema/model/Movie.model";
 import { movieRouter } from "../route/movie.route";
 import {
   aggregationByGenreYear,
   aggregationByYearRange,
+  aggregationByAverageDuration,
 } from "./aggregation/movie-data-project";
 import {
   textSearchQuery,
@@ -29,7 +34,7 @@ export const getMovies = async ({
   }
 
   let { query, project, sort } = queryParams;
-  let cursor;
+  let cursor: IMovie[];
 
   try {
     cursor = await Movie.find(query, project)
@@ -42,8 +47,8 @@ export const getMovies = async ({
   }
 
   try {
-    const moviesList = await cursor;
-    const totalNumMovies = await Movie.find(query).countDocuments();
+    const moviesList: IMovie[] = await cursor;
+    const totalNumMovies: number = await Movie.find(query).countDocuments();
 
     return { moviesList, totalNumMovies };
   } catch (e) {
@@ -54,9 +59,28 @@ export const getMovies = async ({
   }
 };
 
+export const getMovieById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const id: string = req.params.id;
+  const movie: IMovie = await Movie.findById(id, {
+    title: 1,
+    countries: 1,
+    directors: 1,
+    imdb: 1,
+    year: 1,
+  });
+  res.json(movie);
+};
+
 // Get - Movies by Cast, Genre or Text Search
-export const searchMovies = async (req: Request, res: Response, next) => {
-  const moviesPerPage = 10;
+export const searchMovies = async (
+  req: Request,
+  res: Response,
+  next
+): Promise<void> => {
+  const moviesPerPage: number = 10;
   let page: number;
 
   // Set Page number
@@ -68,7 +92,7 @@ export const searchMovies = async (req: Request, res: Response, next) => {
   }
 
   // Integrate a
-  let searchType;
+  let searchType: string;
 
   try {
     searchType = Object.keys(req.query)[0];
@@ -104,7 +128,7 @@ export const searchMovies = async (req: Request, res: Response, next) => {
     moviesPerPage,
   });
 
-  let response = {
+  let response: SearchListResponse = {
     movies: moviesList,
     page: page,
     filters: filters,
@@ -118,8 +142,8 @@ export const searchMovies = async (req: Request, res: Response, next) => {
 // GET - Movies by a range between two years
 export const searchMoviesYearRange = async (req: Request, res: Response) => {
   try {
-    const movies = await Movie.aggregate(aggregationByYearRange(req));
-
+    const movies: IMovie[] = await Movie.aggregate(aggregationByYearRange(req));
+    // TODO: Create a list numbered and filter for this result
     res.json(movies);
   } catch (e) {
     console.error(`Aggregation failed - Error Type: ${e}`);
@@ -129,7 +153,20 @@ export const searchMoviesYearRange = async (req: Request, res: Response) => {
 // GET - Movies by Genre and Year
 export const moviesByGenresAndYear = async (req: Request, res: Response) => {
   try {
-    const movies = await Movie.aggregate(aggregationByGenreYear(req));
+    const movies: IMovie[] = await Movie.aggregate(aggregationByGenreYear(req));
+
+    res.json(movies);
+  } catch (e) {
+    console.error(`Aggregation failed - Error Type: ${e}`);
+  }
+};
+
+// GET - Movies by Genre and Year
+export const getMoviesByAverage = async (req: Request, res: Response) => {
+  try {
+    const movies: IMovie[] = await Movie.aggregate(
+      aggregationByAverageDuration(req)
+    );
 
     res.json(movies);
   } catch (e) {
