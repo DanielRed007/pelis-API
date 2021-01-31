@@ -105,6 +105,51 @@ describe("Get movies with filters", () => {
     expect(seventhMovie.genres[1]).toEqual("Romance");
   });
 
+  test("Get movies by genre and year", async () => {
+    const pipeline = [
+      { $match: { year: 2005, genres: { $all: ["Action", "Comedy"] } } },
+      {
+        $project: { year: 1, genres: 1, title: 1, countries: 1, directors: 1 },
+      },
+    ];
+
+    const movies = await Movie.aggregate(pipeline);
+    const fourthMovie = movies[3];
+    // Total movies
+    expect(movies.length).toEqual(19);
+    // Specific movie
+    expect(fourthMovie).toBeDefined();
+    // Movie title
+    expect(fourthMovie.title).toEqual("Mr. & Mrs. Smith");
+    // Movie countries
+    expect(fourthMovie.countries[0]).toEqual("USA");
+    // Movie directors
+    expect(fourthMovie.directors[0]).toEqual("Doug Liman");
+  });
+
+  test("Get average duration of movies by year", async () => {
+    const pipeline = [
+      {
+        $match: {
+          year: 2011,
+        },
+      },
+      {
+        $group: {
+          _id: "total",
+          average: { $avg: "$runtime" },
+        },
+      },
+    ];
+
+    const totalCalculation = await Movie.aggregate(pipeline);
+
+    // Total calculation
+    expect(totalCalculation).toBeDefined();
+    // Total average
+    expect(totalCalculation[0].average).toStrictEqual(100.02947154471545);
+  });
+
   afterAll(async () => {
     await mongoose.connection.close();
   });
