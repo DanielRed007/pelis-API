@@ -6,12 +6,13 @@ function suma(a, b) {
 import * as mongoose from "mongoose";
 import { dbConfig } from "../../../config/dbConfig";
 import { getMovies } from "../movie.controller";
+import Movie from "../../../schema/model/Movie.model";
 
 const db = "test";
 
 describe("Get movies with filters", () => {
   beforeAll(async () => {
-    const url = `${dbConfig.test}/pelis`;
+    const url = `${dbConfig.mongoURI}/sample_mflix`;
     await mongoose.connect(url, { useNewUrlParser: true });
   });
 
@@ -55,8 +56,8 @@ describe("Get movies with filters", () => {
     expect(lastMovie.title).toEqual("2 Days in New York");
   });
 
-  test("Get movies by text search - First page in the list", async() => {
-    const filters = { "text": "Kubrick" };
+  test("Get movies by text search - First page in the list", async () => {
+    const filters = { text: "Kubrick" };
 
     const { moviesList: firstPage, totalNumMovies } = await getMovies({
       filters,
@@ -70,6 +71,38 @@ describe("Get movies with filters", () => {
     const lastMovie = firstPage[2];
     // Check title of last movie
     expect(lastMovie.title).toEqual("Stanley Kubrick: A Life in Pictures");
+  });
+
+  test("Get movies by year range", async () => {
+    const pipeline = [
+      {
+        $match: {
+          $and: [{ year: { $lte: 1930 } }, { year: { $gte: 1900 } }],
+        },
+      },
+      {
+        $project: { title: 1, genres: 1, year: 1 },
+      },
+      {
+        $sort: { year: -1, title: 1 },
+      },
+    ];
+
+    const movies = await Movie.aggregate(pipeline);
+
+    const totalMovies = movies.length;
+    const seventhMovie = movies[6];
+
+    // Total number of movies
+    expect(totalMovies).toEqual(132);
+    // Specific movie
+    expect(seventhMovie).toBeDefined();
+    // Movie title
+    expect(seventhMovie.title).toEqual("The Big House");
+    // Movie year
+    expect(seventhMovie.year).toEqual(1930);
+    // Second movie genre
+    expect(seventhMovie.genres[1]).toEqual("Romance");
   });
 
   afterAll(async () => {
